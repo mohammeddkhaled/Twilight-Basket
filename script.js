@@ -142,6 +142,22 @@ setInterval(() => {
   if (!gameOver) spawnStar();
 }, 500);
 
+// Increase difficulty every 15 seconds
+setInterval(() => {
+  if (!gameOver) fallSpeed += 1;
+}, 15000);
+
+// Countdown timer
+const timer = setInterval(() => {
+  if (!gameOver) {
+    gameTime--;
+    if (gameTime <= 0) {
+      gameOver = true;
+      highScore = Math.max(score, highScore);
+      clearInterval(timer);
+    }
+  }
+}, 1000);
 
 // Start the game
 loop();
