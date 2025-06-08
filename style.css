@@ -8,7 +8,25 @@ body {
 
 canvas {
   display: block;
-  margin: 0 auto;
+  margin: 10px auto;
   background: #002733;
   border: 2px solid #fff;
+}
+
+#restartBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 12px 24px;
+  font-size: 18px;
+  background-color: #008cba;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 10;
+}
+#restartBtn:hover {
+  background-color: #006a91;
 }
