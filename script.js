@@ -14,7 +14,6 @@ const basket = {
   speed: 7
 };
 
-// Game state
 const keys = { left: false, right: false };
 const stars = [];
 const dangers = [];
@@ -24,15 +23,6 @@ let fallSpeed = 2;
 let gameTime = 60;
 let dangerHits = 0;
 const maxDangerHits = 5;
-
-// Button area in canvas
-const stopBtn = {
-  x: canvas.width - 160,
-  y: 60,
-  width: 140,
-  height: 30,
-  text: "⏸ Stop"
-};
 
 // Input events
 document.addEventListener('keydown', e => {
@@ -44,24 +34,12 @@ document.addEventListener('keyup', e => {
   if (e.key === 'ArrowRight') keys.right = false;
 });
 
-canvas.addEventListener('click', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-
-  if (
-    mouseX >= stopBtn.x &&
-    mouseX <= stopBtn.x + stopBtn.width &&
-    mouseY >= stopBtn.y &&
-    mouseY <= stopBtn.y + stopBtn.height
-  ) {
-    if (gameOver) return;
-    paused = !paused;
-    stopBtn.text = paused ? "▶ Resume" : "⏸ Stop";
-  }
+document.getElementById("pauseBtn").addEventListener("click", () => {
+  if (gameOver) return;
+  paused = !paused;
+  document.getElementById("pauseBtn").innerText = paused ? "▶ Resume" : "⏸ Stop";
 });
 
-// Star shape
 function drawStar(cx, cy, spikes, outerR, innerR) {
   let rot = Math.PI / 2 * 3;
   let step = Math.PI / spikes;
@@ -78,7 +56,6 @@ function drawStar(cx, cy, spikes, outerR, innerR) {
   ctx.fill();
 }
 
-// Red danger ball
 function drawDangerBall(x, y) {
   ctx.beginPath();
   ctx.arc(x, y, 10, 0, Math.PI * 2);
@@ -86,14 +63,12 @@ function drawDangerBall(x, y) {
   ctx.fill();
 }
 
-// Spawn item
 function spawnItem() {
   const x = Math.random() * (canvas.width - 20) + 10;
   const isDanger = Math.random() < 0.25;
   isDanger ? dangers.push({ x, y: -20 }) : stars.push({ x, y: -20 });
 }
 
-// Update logic
 function update() {
   if (gameOver || paused) return;
 
@@ -130,16 +105,6 @@ function update() {
   }
 }
 
-// Draw button in canvas
-function drawStopButton() {
-  ctx.fillStyle = "red";
-  ctx.fillRect(stopBtn.x, stopBtn.y, stopBtn.width, stopBtn.height);
-  ctx.fillStyle = "white";
-  ctx.font = "16px sans-serif";
-  ctx.fillText(stopBtn.text, stopBtn.x + 20, stopBtn.y + 20);
-}
-
-// Draw all
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -156,8 +121,6 @@ function draw() {
   ctx.fillText("Time: " + gameTime, canvas.width / 2 - 40, 30);
   ctx.fillText("Hits: " + dangerHits + " / " + maxDangerHits, 10, 60);
 
-  drawStopButton();
-
   if (paused) {
     ctx.fillStyle = "white";
     ctx.font = "40px sans-serif";
@@ -170,7 +133,6 @@ function draw() {
   }
 }
 
-// End game
 function endGame() {
   if (score > highScore) {
     highScore = score;
@@ -180,7 +142,6 @@ function endGame() {
   document.getElementById("restartBtn").style.display = "block";
 }
 
-// Reset game
 function resetGame() {
   score = 0;
   fallSpeed = 2;
@@ -191,20 +152,18 @@ function resetGame() {
   stars.length = 0;
   dangers.length = 0;
   document.getElementById("restartBtn").style.display = "none";
-  stopBtn.text = "⏸ Stop";
+  document.getElementById("pauseBtn").innerText = "⏸ Stop";
   clearInterval(timer);
   startTimer();
   loop();
 }
 
-// Game loop
 function loop() {
   update();
   draw();
   if (!gameOver) requestAnimationFrame(loop);
 }
 
-// Timer
 function startTimer() {
   timer = setInterval(() => {
     if (!paused && !gameOver) {
@@ -219,10 +178,8 @@ function startTimer() {
 
 document.getElementById("restartBtn").addEventListener("click", resetGame);
 
-// Item spawn and difficulty
 setInterval(() => { if (!gameOver) spawnItem(); }, 500);
 setInterval(() => { if (!gameOver) fallSpeed += 1; }, 15000);
 
-// Start
 startTimer();
 loop();
