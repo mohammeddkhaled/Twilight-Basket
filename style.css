@@ -1,47 +1,93 @@
-/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 body {
   background: #000022;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: white;
+}
+
+/* Start Menu */
+.start-menu {
+  width: 100vw;
+  height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  overflow: hidden;
+  background-image: url("/images/stars-2.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  text-align: center;
 }
 
-/* Wrapper for canvas and buttons */
+.start-menu h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #fff;
+  text-shadow: 2px 2px 8px #000;
+}
+
+.start-menu select,
+.start-menu button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+#startBtn {
+  background-color: #28a745;
+  color: white;
+}
+
+#startBtn:hover {
+  background-color: #1c7430;
+}
+
+/* Game Wrapper */
 .game-wrapper {
   position: relative;
-  width: 90vw;
+  width: 100%;
   max-width: 800px;
-  height: 90vh;
-  aspect-ratio: 4/3;
+  margin: 30px auto 0;
+  aspect-ratio: 4 / 3;
 }
 
-/* Canvas styling */
+.hidden {
+  display: none;
+}
+
+/* Canvas */
 #gameCanvas {
   width: 100%;
   height: 100%;
   background: #002733;
   border: 3px solid white;
-  display: block;
   border-radius: 10px;
+  display: block;
 }
 
-/* Buttons - Restart and Pause */
+/* Buttons */
 #restartBtn,
 #pauseBtn {
   position: absolute;
-  padding: 10px;
+  padding: 10px 20px;
   font-size: 16px;
-  background-color: #008cba;
+  background-color: #19a9d9;
   color: white;
   border: none;
   border-radius: 8px;
@@ -52,12 +98,11 @@ body {
 
 #restartBtn:hover,
 #pauseBtn:hover {
-  background-color: #006a91;
+  background-color: #10495e;
 }
 
-/* Specific positions */
 #restartBtn {
-  top: 55%;
+  top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: none;
@@ -65,5 +110,5 @@ body {
 
 #pauseBtn {
   top: 50px;
-  right: 15px;
+  right: 10px;
 }

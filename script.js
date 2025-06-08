@@ -1,11 +1,12 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+let gameDuration = 60;
+let isUnlimited = false;
 let paused = false;
 let gameOver = false;
 let timer;
 
-// Basket object
 const basket = {
   x: canvas.width / 2 - 50,
   y: canvas.height - 30,
@@ -24,7 +25,6 @@ let gameTime = 60;
 let dangerHits = 0;
 const maxDangerHits = 5;
 
-// Input events
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') keys.left = true;
   if (e.key === 'ArrowRight') keys.right = true;
@@ -77,7 +77,7 @@ function update() {
   basket.x = Math.max(0, Math.min(basket.x, canvas.width - basket.width));
 
   for (let i = stars.length - 1; i >= 0; i--) {
-    stars[i].y += fallSpeed;
+    stars[i].y += fallSpeed + 2;
     const s = stars[i];
     if (s.y + 10 >= basket.y && s.x >= basket.x && s.x <= basket.x + basket.width) {
       score++;
@@ -88,7 +88,7 @@ function update() {
   }
 
   for (let i = dangers.length - 1; i >= 0; i--) {
-    dangers[i].y += fallSpeed + 2;
+    dangers[i].y += fallSpeed + 3;
     const d = dangers[i];
     if (d.y + 10 >= basket.y && d.x >= basket.x && d.x <= basket.x + basket.width) {
       score = Math.max(0, score - 1);
@@ -118,7 +118,7 @@ function draw() {
   ctx.font = "20px sans-serif";
   ctx.fillText("Score: " + score, 10, 30);
   ctx.fillText("High Score: " + highScore, canvas.width - 160, 30);
-  ctx.fillText("Time: " + gameTime, canvas.width / 2 - 40, 30);
+  ctx.fillText("Time: " + (isUnlimited ? "∞" : gameTime), canvas.width / 2 - 40, 30);
   ctx.fillText("Hits: " + dangerHits + " / " + maxDangerHits, 10, 60);
 
   if (paused) {
@@ -145,7 +145,7 @@ function endGame() {
 function resetGame() {
   score = 0;
   fallSpeed = 2;
-  gameTime = 60;
+  gameTime = isUnlimited ? Infinity : gameDuration;
   dangerHits = 0;
   gameOver = false;
   paused = false;
@@ -166,7 +166,7 @@ function loop() {
 
 function startTimer() {
   timer = setInterval(() => {
-    if (!paused && !gameOver) {
+    if (!paused && !gameOver && !isUnlimited) {
       gameTime--;
       if (gameTime <= 0) {
         gameOver = true;
@@ -176,10 +176,23 @@ function startTimer() {
   }, 1000);
 }
 
+document.getElementById("startBtn").addEventListener("click", () => {
+  const selected = document.getElementById("timeSelect").value;
+  isUnlimited = selected === "unlimited";
+  gameDuration = isUnlimited ? Infinity : parseInt(selected);
+  gameTime = isUnlimited ? Infinity : gameDuration;
+
+  document.querySelector(".start-menu").style.display = "none";
+  document.querySelector(".game-wrapper").classList.remove("hidden");
+  document.getElementById("pauseBtn").style.display = "block";
+  document.getElementById("gameCanvas").style.display = "block";
+  
+  startTimer();
+  loop();
+
+  // Spawn stars/dangers
+  setInterval(() => { if (!gameOver) spawnItem(); }, 500);
+  setInterval(() => { if (!gameOver) fallSpeed += 2; }, 10000);
+});
+
 document.getElementById("restartBtn").addEventListener("click", resetGame);
-
-setInterval(() => { if (!gameOver) spawnItem(); }, 500);
-setInterval(() => { if (!gameOver) fallSpeed += 1; }, 15000);
-
-startTimer();
-loop();

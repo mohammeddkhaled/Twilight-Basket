@@ -3,15 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Catch the Falling Stars</title>
+    <title>Twilight Basket</title>
     <link rel="stylesheet" href="style.css" />
     <script src="script.js" defer></script>
   </head>
   <body>
+    <div class="start-menu">
+      <h1>Twilight Basket</h1>
+      <select id="timeSelect">
+        <option value="60">60 Seconds</option>
+        <option value="120">2 Minutes</option>
+        <option value="unlimited">Unlimited</option>
+      </select>
+      <button id="startBtn"> Start Game</button>
+    </div>
+
     <div class="game-wrapper">
-      <canvas id="gameCanvas" width="800" height="600"></canvas>
-      <button id="restartBtn">🔄 Restart</button>
-      <button id="pauseBtn">⏸ Stop</button>
+      <canvas id="gameCanvas" width="800" height="600" style="display: none"></canvas>
+      <button id="restartBtn">Restart</button>
+      <button id="pauseBtn" style="display: none">⏸ Stop</button>
     </div>
   </body>
 </html>
