@@ -137,10 +137,10 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-
-
-
-
+// Start spawning stars regularly
+setInterval(() => {
+  if (!gameOver) spawnStar();
+}, 500);
 
 
 // Start the game
