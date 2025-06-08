@@ -20,7 +20,11 @@ const keys = {
 // Stars array and game variables
 const stars = [];
 let score = 0;
-let highScore = 0;
+
+// Load high score from localStorage
+let highScore = localStorage.getItem("highScore") || 0;
+highScore = parseInt(highScore);
+
 let fallSpeed = 2;
 let gameTime = 60;
 let gameOver = false;
@@ -153,7 +157,13 @@ const timer = setInterval(() => {
     gameTime--;
     if (gameTime <= 0) {
       gameOver = true;
-      highScore = Math.max(score, highScore);
+
+      // Save high score if beaten
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+      }
+
       clearInterval(timer);
     }
   }
