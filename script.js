@@ -107,7 +107,7 @@ function update() {
   }
 
   for (let i = dangers.length - 1; i >= 0; i--) {
-    dangers[i].y += fallSpeed;
+    dangers[i].y += fallSpeed +2;
     const d = dangers[i];
 
     if (
