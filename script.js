@@ -25,6 +25,14 @@ let gameTime = 60;
 let dangerHits = 0;
 const maxDangerHits = 5;
 
+// 🔊 Audio setup
+// const bgMusic = new Audio("sounds/bg-music.mp3");
+// bgMusic.loop = true;
+// bgMusic.volume = 0.5;
+
+const starSound = new Audio("sounds/star.mp3");
+const dangerSound = new Audio("/sounds/danger.mp3");
+
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') keys.left = true;
   if (e.key === 'ArrowRight') keys.right = true;
@@ -38,6 +46,11 @@ document.getElementById("pauseBtn").addEventListener("click", () => {
   if (gameOver) return;
   paused = !paused;
   document.getElementById("pauseBtn").innerText = paused ? "▶ Resume" : "⏸ Stop";
+  // if (paused) {
+  //   bgMusic.pause();
+  // } else {
+  //   bgMusic.play();
+  // }
 });
 
 function drawStar(cx, cy, spikes, outerR, innerR) {
@@ -81,6 +94,8 @@ function update() {
     const s = stars[i];
     if (s.y + 10 >= basket.y && s.x >= basket.x && s.x <= basket.x + basket.width) {
       score++;
+      starSound.currentTime = 0;
+      if (!paused) starSound.play();
       stars.splice(i, 1);
     } else if (s.y > canvas.height) {
       stars.splice(i, 1);
@@ -93,6 +108,8 @@ function update() {
     if (d.y + 10 >= basket.y && d.x >= basket.x && d.x <= basket.x + basket.width) {
       score = Math.max(0, score - 1);
       dangerHits++;
+      dangerSound.currentTime = 0;
+      if (!paused) dangerSound.play();
       dangers.splice(i, 1);
     } else if (d.y > canvas.height) {
       dangers.splice(i, 1);
@@ -139,6 +156,8 @@ function endGame() {
     localStorage.setItem("highScore", highScore);
   }
   clearInterval(timer);
+  // bgMusic.pause();
+  // bgMusic.currentTime = 0;
   document.getElementById("restartBtn").style.display = "block";
 }
 
@@ -154,6 +173,7 @@ function resetGame() {
   document.getElementById("restartBtn").style.display = "none";
   document.getElementById("pauseBtn").innerText = "⏸ Stop";
   clearInterval(timer);
+  // bgMusic.play();
   startTimer();
   loop();
 }
@@ -186,9 +206,10 @@ document.getElementById("startBtn").addEventListener("click", () => {
   document.querySelector(".game-wrapper").classList.remove("hidden");
   document.getElementById("pauseBtn").style.display = "block";
   document.getElementById("gameCanvas").style.display = "block";
-  
+
   startTimer();
   loop();
+  // bgMusic.play();
 
   // Spawn stars/dangers
   setInterval(() => { if (!gameOver) spawnItem(); }, 500);
