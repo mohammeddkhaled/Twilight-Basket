@@ -5,6 +5,7 @@ let gameDuration = 60;
 let isUnlimited = false;
 let paused = false;
 let gameOver = false;
+let isNewHighScore = false;
 let timer;
 
 const basket = {
@@ -26,13 +27,11 @@ let dangerHits = 0;
 const maxDangerHits = 5;
 
 // 🔊 Audio setup
-// const bgMusic = new Audio("sounds/bg-music.mp3");
-// bgMusic.loop = true;
-// bgMusic.volume = 0.5;
-
 const starSound = new Audio("sounds/star.mp3");
-const dangerSound = new Audio("/sounds/danger.mp3");
+const dangerSound = new Audio("sounds/danger.mp3");
+const congratsSound = new Audio("sounds/congrats.mp3");
 
+// 🎮 Keyboard controls
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') keys.left = true;
   if (e.key === 'ArrowRight') keys.right = true;
@@ -42,17 +41,44 @@ document.addEventListener('keyup', e => {
   if (e.key === 'ArrowRight') keys.right = false;
 });
 
+// 🖱️ Mouse movement support
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  basket.x = mouseX - basket.width / 2;
+  basket.x = Math.max(0, Math.min(basket.x, canvas.width - basket.width));
+});
+
+// 📱 Touch support
+let touchStartX = null;
+
+canvas.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+}, false);
+
+canvas.addEventListener('touchmove', (e) => {
+  if (touchStartX === null) return;
+  const rect = canvas.getBoundingClientRect();
+  const touchX = e.touches[0].clientX - rect.left;
+  basket.x = touchX - basket.width / 2;
+  basket.x = Math.max(0, Math.min(basket.x, canvas.width - basket.width));
+  touchStartX = e.touches[0].clientX;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+  touchStartX = null;
+}, false);
+
+// ⏸ Pause functionality
 document.getElementById("pauseBtn").addEventListener("click", () => {
   if (gameOver) return;
   paused = !paused;
   document.getElementById("pauseBtn").innerText = paused ? "▶ Resume" : "⏸ Stop";
-  // if (paused) {
-  //   bgMusic.pause();
-  // } else {
-  //   bgMusic.play();
-  // }
 });
 
+// ⭐ Drawing Functions
 function drawStar(cx, cy, spikes, outerR, innerR) {
   let rot = Math.PI / 2 * 3;
   let step = Math.PI / spikes;
@@ -145,20 +171,36 @@ function draw() {
   }
 
   if (gameOver) {
-    ctx.font = "40px sans-serif";
-    ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2);
+    let yOffset = canvas.height / 2;
+
+    ctx.font = "36px sans-serif";
+    ctx.fillStyle = "white";
+    ctx.fillText("Game Over", canvas.width / 2 - 100, yOffset);
+
+    document.getElementById("restartBtn").style.display = "block";
+
+    if (isNewHighScore) {
+      ctx.font = "28px sans-serif";
+      ctx.fillStyle = "lightgreen";
+      ctx.fillText("🎉 Congratulations! New High Score! 🎉", canvas.width / 2 - 220, yOffset + 80);
+    }
   }
 }
 
 function endGame() {
+  clearInterval(timer);
+  isNewHighScore = false;
+
   if (score > highScore) {
     highScore = score;
     localStorage.setItem("highScore", highScore);
+    isNewHighScore = true;
+    congratsSound.currentTime = 0;
+    congratsSound.play();
+    launchConfetti();
   }
-  clearInterval(timer);
-  // bgMusic.pause();
-  // bgMusic.currentTime = 0;
-  document.getElementById("restartBtn").style.display = "block";
+
+  gameOver = true;
 }
 
 function resetGame() {
@@ -168,12 +210,12 @@ function resetGame() {
   dangerHits = 0;
   gameOver = false;
   paused = false;
+  isNewHighScore = false;
   stars.length = 0;
   dangers.length = 0;
   document.getElementById("restartBtn").style.display = "none";
   document.getElementById("pauseBtn").innerText = "⏸ Stop";
   clearInterval(timer);
-  // bgMusic.play();
   startTimer();
   loop();
 }
@@ -209,11 +251,23 @@ document.getElementById("startBtn").addEventListener("click", () => {
 
   startTimer();
   loop();
-  // bgMusic.play();
 
-  // Spawn stars/dangers
   setInterval(() => { if (!gameOver) spawnItem(); }, 500);
   setInterval(() => { if (!gameOver) fallSpeed += 2; }, 10000);
 });
 
 document.getElementById("restartBtn").addEventListener("click", resetGame);
+
+// 🎉 Confetti across the full canvas
+function launchConfetti() {
+  for (let i = 0; i < 500; i++) {
+    setTimeout(() => {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      ctx.beginPath();
+      ctx.arc(x, y, 2 + Math.random() * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }, i * 2);
+  }
+}
