@@ -26,12 +26,15 @@ let gameTime = 60;
 let dangerHits = 0;
 const maxDangerHits = 5;
 
-// 🔊 Audio setup
+// Audio
 const starSound = new Audio("sounds/star.mp3");
 const dangerSound = new Audio("sounds/danger.mp3");
 const congratsSound = new Audio("sounds/congrats.mp3");
 
-// 🎮 Keyboard controls
+// Dots for new high score
+const highScoreDots = [];
+
+// Keyboard
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') keys.left = true;
   if (e.key === 'ArrowRight') keys.right = true;
@@ -41,44 +44,37 @@ document.addEventListener('keyup', e => {
   if (e.key === 'ArrowRight') keys.right = false;
 });
 
-// 🖱️ Mouse movement support
+// Mouse
 canvas.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
-  basket.x = mouseX - basket.width / 2;
-  basket.x = Math.max(0, Math.min(basket.x, canvas.width - basket.width));
+  basket.x = Math.max(0, Math.min(mouseX - basket.width / 2, canvas.width - basket.width));
 });
 
-// 📱 Touch support
+// Touch
 let touchStartX = null;
-
 canvas.addEventListener('touchstart', (e) => {
-  const touch = e.touches[0];
-  touchStartX = touch.clientX;
+  touchStartX = e.touches[0].clientX;
 }, false);
-
 canvas.addEventListener('touchmove', (e) => {
-  if (touchStartX === null) return;
   const rect = canvas.getBoundingClientRect();
   const touchX = e.touches[0].clientX - rect.left;
-  basket.x = touchX - basket.width / 2;
-  basket.x = Math.max(0, Math.min(basket.x, canvas.width - basket.width));
+  basket.x = Math.max(0, Math.min(touchX - basket.width / 2, canvas.width - basket.width));
   touchStartX = e.touches[0].clientX;
   e.preventDefault();
 }, { passive: false });
-
 canvas.addEventListener('touchend', () => {
   touchStartX = null;
 }, false);
 
-// ⏸ Pause functionality
+// Pause
 document.getElementById("pauseBtn").addEventListener("click", () => {
   if (gameOver) return;
   paused = !paused;
   document.getElementById("pauseBtn").innerText = paused ? "▶ Resume" : "⏸ Stop";
 });
 
-// ⭐ Drawing Functions
+// Drawing
 function drawStar(cx, cy, spikes, outerR, innerR) {
   let rot = Math.PI / 2 * 3;
   let step = Math.PI / spikes;
@@ -104,8 +100,7 @@ function drawDangerBall(x, y) {
 
 function spawnItem() {
   const x = Math.random() * (canvas.width - 20) + 10;
-  const isDanger = Math.random() < 0.25;
-  isDanger ? dangers.push({ x, y: -20 }) : stars.push({ x, y: -20 });
+  Math.random() < 0.25 ? dangers.push({ x, y: -20 }) : stars.push({ x, y: -20 });
 }
 
 function update() {
@@ -172,17 +167,23 @@ function draw() {
 
   if (gameOver) {
     let yOffset = canvas.height / 2;
-
     ctx.font = "36px sans-serif";
     ctx.fillStyle = "white";
     ctx.fillText("Game Over", canvas.width / 2 - 100, yOffset);
-
     document.getElementById("restartBtn").style.display = "block";
 
     if (isNewHighScore) {
       ctx.font = "28px sans-serif";
       ctx.fillStyle = "lightgreen";
       ctx.fillText("🎉 Congratulations! New High Score! 🎉", canvas.width / 2 - 220, yOffset + 80);
+
+      // draw static colorful dots
+      highScoreDots.forEach(dot => {
+        ctx.fillStyle = dot.color;
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
     }
   }
 }
@@ -197,7 +198,7 @@ function endGame() {
     isNewHighScore = true;
     congratsSound.currentTime = 0;
     congratsSound.play();
-    launchConfetti();
+    createStaticDots();
   }
 
   gameOver = true;
@@ -213,6 +214,7 @@ function resetGame() {
   isNewHighScore = false;
   stars.length = 0;
   dangers.length = 0;
+  highScoreDots.length = 0;
   document.getElementById("restartBtn").style.display = "none";
   document.getElementById("pauseBtn").innerText = "⏸ Stop";
   clearInterval(timer);
@@ -238,6 +240,29 @@ function startTimer() {
   }, 1000);
 }
 
+// Increase falling speed every 10s
+let speedUpCount = 0;
+const speedInterval = setInterval(() => {
+  if (!gameOver && speedUpCount < 5) {
+    fallSpeed += 2;
+    speedUpCount++;
+  }
+}, 10000);
+
+// Static Colorful Dots
+function createStaticDots() {
+  highScoreDots.length = 0;
+  for (let i = 0; i < 100; i++) {
+    highScoreDots.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 5 + 2,
+      color: `hsl(${Math.random() * 360}, 100%, 60%)`
+    });
+  }
+}
+
+// Start Game
 document.getElementById("startBtn").addEventListener("click", () => {
   const selected = document.getElementById("timeSelect").value;
   isUnlimited = selected === "unlimited";
@@ -253,21 +278,6 @@ document.getElementById("startBtn").addEventListener("click", () => {
   loop();
 
   setInterval(() => { if (!gameOver) spawnItem(); }, 500);
-  setInterval(() => { if (!gameOver) fallSpeed += 2; }, 10000);
 });
 
 document.getElementById("restartBtn").addEventListener("click", resetGame);
-
-// 🎉 Confetti across the full canvas
-function launchConfetti() {
-  for (let i = 0; i < 500; i++) {
-    setTimeout(() => {
-      const x = Math.random() * canvas.width;
-      const y = Math.random() * canvas.height;
-      ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 50%)`;
-      ctx.beginPath();
-      ctx.arc(x, y, 2 + Math.random() * 3, 0, Math.PI * 2);
-      ctx.fill();
-    }, i * 2);
-  }
-}
